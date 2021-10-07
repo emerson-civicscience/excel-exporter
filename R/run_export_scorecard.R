@@ -53,9 +53,7 @@ run_export_scorecard <- function(input_file_name,
   pandas_df <- r_to_py(dt_write_excel)
   file_name_py <- r_to_py(output_file_name)
 
-  python_file_name_and_dir <- file.path(python_file_location, python_file_name)
-
-  source_python(python_file_name_and_dir)
+  source_python(system.file("exec", "export_scorecard_to_excel.py", package = "excelExporter"))
 
   export_scorecard_to_excel(pandas_df,
                             file_name_py)
@@ -63,7 +61,8 @@ run_export_scorecard <- function(input_file_name,
   original_file_name_and_dir <- file.path(getwd(), output_file_name)
 
   file_copy_status <- file.copy(from = original_file_name_and_dir,
-                                to   = file.path(output_file_name_and_dir))
+                                to   = file.path(output_file_name_and_dir),
+                                overwrite = TRUE)
 
   if(file_copy_status == TRUE){
     file.remove(original_file_name_and_dir)
