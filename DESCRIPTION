@@ -1,0 +1,27 @@
+Package: excelExporter
+Type: Package
+Title: Exports Scorecard Data to Excel Charts
+Version: 0.1.0
+Authors@R: 
+    person(given = "Emerson",
+           family = "Goncus",
+           role = c("aut", "cre"),
+           email = "emerson@civicscience.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: The automatic exporter takes a raw Excel 
+    export of a scorecard and converts the label column into four columns (1 index based on sort_order and 3 ID columns)
+Depends:
+    R (>= 3.2.0)
+Imports:
+    civicscienceR,
+    DBI,
+    dplyr,
+    lubridate,
+    reticulate,
+    RMySQL,
+    stringr,
+    xlsx
+License: 
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
