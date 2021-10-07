@@ -1,3 +1,5 @@
+#' @export
+
 run_export_scorecard <- function(input_file_name,
                                  input_file_location = NULL,
                                  output_file_name = NULL,
