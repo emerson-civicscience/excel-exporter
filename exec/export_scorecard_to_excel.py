@@ -22,6 +22,8 @@ def export_scorecard_to_excel(pandas_df, file_name_py):
 	writer = pd.ExcelWriter(file_name_py, engine='xlsxwriter')
 	workbook = writer.book
 	
+	truncated_number = 0
+	
 	title_cell_format = workbook.add_format({'font_color': 'white'})
 	
 	first_data_cell = xw.utility.xl_rowcol_to_cell(row=first_data_row, col=first_data_col)
@@ -57,12 +59,12 @@ def export_scorecard_to_excel(pandas_df, file_name_py):
 		
 		for row_in_sheet in range(first_data_row+1, crosstab_df_t_nrow+2):
 			
-			j = ','.join(['\'' + truncated_sheet_name + '\'!' + str(i) + str(row_in_sheet) for i in series])
-			k = ','.join(['\'' + truncated_sheet_name + '\'!' + str(i) + str(category_name_row) for i in series])
+			j = ','.join(['\'' + reference_sheet_name + '\'!' + str(i) + str(row_in_sheet) for i in series])
+			k = ','.join(['\'' + reference_sheet_name + '\'!' + str(i) + str(category_name_row) for i in series])
 			formula_for_series = '=(' + j + ')'
 			formula_for_categories = '=(' + k + ')'
 			col_with_series_name = first_table_col
-			name_of_series = '\'' + truncated_sheet_name + '\'!' + xw.utility.xl_rowcol_to_cell(row=row_in_sheet-1, col=col_with_series_name)
+			name_of_series = '\'' + reference_sheet_name + '\'!' + xw.utility.xl_rowcol_to_cell(row=row_in_sheet-1, col=col_with_series_name)
 			chart.add_series({'values': formula_for_series, 
 			'name': name_of_series, 
 			# 'type': 'percentage',
@@ -75,29 +77,33 @@ def export_scorecard_to_excel(pandas_df, file_name_py):
 			
 			
 	for crosstab_loop in chart_references:
-		
-		crosstab_df = pandas_df.loc[pandas_df['Question ID']==crosstab_loop]
-		crosstab_df.reset_index(drop=True, inplace=True)    
-		chart_title = crosstab_df.loc[0, 'Question Text']
-		chart_series = crosstab_df.index.tolist()
-		crosstab_df_t = crosstab_df.T
-		crosstab_df_t_nrow, crosstab_df_t_ncol = crosstab_df_t.shape
-		truncated_sheet_name = str(crosstab_loop)[0:27]
-		crosstab_df_t.to_excel(writer, sheet_name=truncated_sheet_name, index=True, startcol = first_table_col)        
-		last_data_col = crosstab_df_t_ncol + first_table_col
-		last_data_cell = xw.utility.xl_rowcol_to_cell(row=crosstab_df_t_nrow, col=last_data_col)
-		worksheet = writer.sheets[truncated_sheet_name]
-		worksheet.set_column(0, 0, 160)
-		percent_format = workbook.add_format({'num_format': '0%'})
-		worksheet.conditional_format(first_data_cell + ':' + last_data_cell, 
-			{'type': 'cell', 'criteria': '<', 'value': 1, 'format': percent_format})
-			
-		chart_number += 1
-			
-		makeChart(chart_title, chart_series, chart_number)
-			
-		
-			
+	  crosstab_df = pandas_df.loc[pandas_df['Question ID']==crosstab_loop]
+	  crosstab_df.reset_index(drop=True, inplace=True)
+	  chart_title = crosstab_df.loc[0, 'Question Text']
+	  chart_series = crosstab_df.index.tolist()
+	  crosstab_df_t = crosstab_df.T
+	  crosstab_df_t_nrow, crosstab_df_t_ncol = crosstab_df_t.shape
+	  
+	  reference_sheet_name = crosstab_loop
+	  
+	  if len(reference_sheet_name) > 31:
+	    truncated_number += 1
+	    if truncated_number > 999:
+	      raise SystemExit("You've 1,000 or more sheets. Try a few less.")
+	    reference_sheet_name = str(reference_sheet_name)[0:27] + " " + str(truncated_number)
+	    
+	  crosstab_df_t.to_excel(writer, sheet_name=reference_sheet_name, index=True, startcol = first_table_col)
+	  last_data_col = crosstab_df_t_ncol + first_table_col
+	  last_data_cell = xw.utility.xl_rowcol_to_cell(row=crosstab_df_t_nrow, col=last_data_col)
+	  worksheet = writer.sheets[reference_sheet_name]
+	  worksheet.set_column(0, 0, 160)
+	  percent_format = workbook.add_format({'num_format': '0%'})
+	  worksheet.conditional_format(first_data_cell + ':' + last_data_cell, {'type': 'cell', 'criteria': '<', 'value': 1, 'format': percent_format})
+	  
+	  chart_number += 1
+	  
+	  makeChart(chart_title, chart_series, chart_number)
+	  
 	writer.save()
 
 
